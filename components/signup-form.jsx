@@ -10,7 +10,7 @@ import {
     IconBrandGoogle,
 } from "@tabler/icons-react";
 import constants from "@/app/constants";
-import {signup} from "@/lib/api/authentication";
+import {login, signup} from "@/lib/api/authentication";
 import {CustomButton} from "@/components/ui/custom-button";
 
 export default function SignupForm() {
@@ -23,20 +23,43 @@ export default function SignupForm() {
     }
 
     const handleSubmit = async (e) => {
-        const formData = new FormData(e.target);
-        const username = formData.get('username');
-        const password = formData.get('password');
-        const email = formData.get('email');
+        //todo add form validations
+        console.log(e)
+        e.preventDefault();
+        try{
+            const formData = new FormData(e.target);
+            const password = formData.get('password');
+            const email = formData.get('email');
+            console.log(password);
+            console.log(email);
 
 
-        console.log("handle submit called");
+            console.log("handle submit called");
+            // if login is not enabled, sign the user up
+            if (!loginEnabled) {
+                console.log("Signing up new user")
+                const username = formData.get('username');
+                const response = await signup(username, email, password);
+                console.log(response);
+                if (response === 200) {
+                    console.log(response);
+                    await router.push("/home");
+                }
+            } else {
+                console.log("Logging in existing user")
+                const response = await login(email, password);
+                console.log(response);
+                if (response === 200) {
+                    console.log(response);
+                    await router.push("/home");
+                }
+            }
+            console.log("Form submitted")
+        }catch (error) {
+            console.log(error);
+            //todo render error page
 
-        const response = await signup(username, email, password);
-        if (response === 200) {
-            console.log(response);
-            await router.push("/home");
-        }
-        console.log("Form submitted");
+        };
     };
     return (
         (<div
@@ -48,7 +71,7 @@ export default function SignupForm() {
                 Glad to have you. Lets get you signed up
                 yet
             </p>
-            <form className="my-8" action={handleSubmit}>
+            <form className="my-8" onSubmit={handleSubmit}>
 
                 {loginEnabled === false && (<div
                     className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
@@ -90,7 +113,7 @@ export default function SignupForm() {
                 <button
                     className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
                     type="submit">
-                    Sign up &rarr;
+                    {`${loginEnabled === true ? "Login" : "Sign up"}`} &rarr;
                     <BottomGradient/>
                 </button>
                 <div className="pt-5">
